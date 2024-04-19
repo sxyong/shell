@@ -19,7 +19,11 @@ function ShowDir() {
         if [ $INDEX -eq $i ]; then
             echo -e "\e[1;32m${flag} ${f}\e[0m"
         else
-            echo "${flag} ${f}"
+            if [ "$flag" == "d" ]; then
+                echo -e "\e[34m${flag} ${f}\e[0m"
+            else
+                echo "${flag} ${f}"
+            fi
         fi
 
         i=$((i+1))
@@ -41,7 +45,7 @@ function g() {
     ShowDir
 
     while true; do
-        read -n 1 char
+        IFS= read -r -d '' -n 1 char
         echo -en "\r\033[K"
 
         case $char in
@@ -53,7 +57,6 @@ function g() {
 
             ClearLine $((CNT+1))
             ShowDir
-            
             ;;
         k)
             INDEX=$((INDEX - 1))
@@ -64,16 +67,22 @@ function g() {
             ClearLine $((CNT+1))
             ShowDir
             ;;
-        l)
+        l | $'\n')
             if [ -d $PWD/${FILES[$INDEX]} ]; then
                 cd $PWD/${FILES[$INDEX]}
                 INDEX=0
 
-                ClearLine $((CNT+1))
+                if [ "$char" == "l" ]; then
+                    ClearLine $((CNT+1))
+                else
+                    ClearLine $((CNT+2))
+                fi
+
                 ShowDir
+            elif [ "$char" == $'\n' ]; then
+                ClearLine 1
             fi
             ;;
-
         h)
             INDEX=0
             cd ..
@@ -81,8 +90,11 @@ function g() {
             ClearLine $((CNT+1))
             ShowDir
             ;;
-        *)
+        q)
             break
+            ;;
+        *)
+            continue
             ;;
         esac
     done
